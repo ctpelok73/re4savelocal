@@ -39,10 +39,25 @@ jobs:
         Copy-Item "include\detver.h" .
       shell: powershell
 
+    - name: Verify Detours files
+      run: |
+        # Check if required files exist
+        if (Test-Path "detours.h") {
+          Write-Host "detours.h found"
+        } else {
+          Write-Host "ERROR: detours.h not found" -ForegroundColor Red
+        }
+        if (Test-Path "detours.lib") {
+          Write-Host "detours.lib found"
+        } else {
+          Write-Host "ERROR: detours.lib not found" -ForegroundColor Red
+        }
+      shell: powershell
+
     - name: Build with MSVC
       run: |
-        # Build the DLL with dependencies using Visual Studio compiler
-        cl /LD /Fe:RE4SaveRedirect.dll dllmain.cpp /link detours.lib shlwapi.lib
+        REM Build the DLL with dependencies using Visual Studio compiler
+        cl /LD /I. /Fe:RE4SaveRedirect.dll dllmain.cpp /link detours.lib shlwapi.lib
       shell: cmd
         
     - name: Upload build artifacts
