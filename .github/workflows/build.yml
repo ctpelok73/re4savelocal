@@ -21,60 +21,21 @@ jobs:
         echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
       shell: powershell
 
-    - name: Download and Build Detours
+    - name: Setup Detours
       run: |
-        # Download Detours source
-        git clone https://github.com/microsoft/detours.git
-        cd detours
-        # Checkout a stable version
-        git checkout v4.0.1
-        
-        # Build Detours using available tools
-        cd src
-        # Use nmake if available, otherwise we'll provide stubs
-        if (Get-Command nmake -ErrorAction SilentlyContinue) {
-          # If Visual Studio is available, build Detours
-          nmake
-        } else {
-          # Create stub library for compilation
-          echo "// This is a stub library for compilation purposes" > detours.lib
-          echo "// Real Detours library is needed for actual functionality" >> detours.lib
-        }
-        cd ..
-
-        cd ..
-
-    - name: Prepare build environment
-      run: |
-        # Copy Detours files if they exist, otherwise use stubs
-        if (Test-Path "detours\lib.X86\detours.lib") {
-          Copy-Item "detours\lib.X86\detours.lib" .
-          Copy-Item "detours\include\detours.h" .
-        } else {
-          # Copy our stub header for compilation
-          Copy-Item "detours_stub.h" "detours.h"
-          
-          # Create a simple implementation for compilation
-          echo '#include "detours.h"' > detours_impl.cpp
-          echo 'void DetourTransactionBegin() {}' >> detours_impl.cpp
-          echo 'void DetourTransactionCommit() {}' >> detours_impl.cpp
-          echo 'void DetourUpdateThread(void* hThread) {}' >> detours_impl.cpp
-          echo 'void DetourAttach(PPVOID ppPointer, PVOID pDetour) {}' >> detours_impl.cpp
-          echo 'void DetourDetach(PPVOID ppPointer, PVOID pDetour) {}' >> detours_impl.cpp
-          
-          # Compile the stub implementation
-          g++ -c detours_impl.cpp -o detours_impl.o
-        }
+        # Download pre-built Detours library
+        curl -L -o detours.zip https://github.com/microsoft/detours/releases/download/v4.0.1/detours-4.0.1-x86.zip
+        7z x detours.zip -odetours
+        # Copy required files
+        Copy-Item "detours\lib.X86\detours.lib" .
+        Copy-Item "detours\include\detours.h" .
+        Copy-Item "detours\include\detver.h" .
 
     - name: Build with MinGW
       run: |
         # Build the DLL with dependencies
-        if (Test-Path "detours\lib.X86\detours.lib") {
-          g++ -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501 dllmain.cpp -o RE4SaveRedirect.dll -Ldetours/lib.X86 -ldetours -lshlwapi
-        } else {
-          # Build with stub implementation
-          g++ -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501 dllmain.cpp detours_impl.o -o RE4SaveRedirect.dll -lshlwapi
-        }
+        g++ -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501 dllmain.cpp -o RE4SaveRedirect.dll detours.lib -lshlwapi
+      shell: powershell
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
