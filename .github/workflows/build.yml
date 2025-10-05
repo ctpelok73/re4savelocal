@@ -26,13 +26,15 @@ jobs:
         # Copy our stub header for compilation
         Copy-Item "detours_stub.h" "detours.h"
         
-        # Create a simple implementation for compilation
-        echo '#include "detours.h"' > detours_impl.cpp
-        echo 'void DetourTransactionBegin() {}' >> detours_impl.cpp
-        echo 'void DetourTransactionCommit() {}' >> detours_impl.cpp
-        echo 'void DetourUpdateThread(void* hThread) {}' >> detours_impl.cpp
-        echo 'void DetourAttach(PPVOID ppPointer, PVOID pDetour) {}' >> detours_impl.cpp
-        echo 'void DetourDetach(PPVOID ppPointer, PVOID pDetour) {}' >> detours_impl.cpp
+        # Create a simple implementation for compilation using PowerShell to avoid encoding issues
+        Set-Content -Path "detours_impl.cpp" -Value @'
+        #include "detours.h"
+        void DetourTransactionBegin() {}
+        void DetourTransactionCommit() {}
+        void DetourUpdateThread(void* hThread) {}
+        void DetourAttach(PPVOID ppPointer, PVOID pDetour) {}
+        void DetourDetach(PPVOID ppPointer, PVOID pDetour) {}
+        '@
         
         # Compile the stub implementation
         g++ -c detours_impl.cpp -o detours_impl.o
