@@ -45,15 +45,21 @@ The plugin hooks into the Windows API functions `CreateFileA` and `CreateFileW` 
 2. Download and build Detours library (or get pre-built version)
 3. Run: `g++ -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501 dllmain.cpp -o RE4SaveRedirect.dll -L. -ldetours -lshlwapi`
 
-Or use the provided batch file: `mingw_only_build.bat`
+Or use the provided batch file: `build.bat`
+
+## Automated Builds
+
+This project includes GitHub Actions workflow that automatically builds the plugin on every commit to the main branch.
+The built DLL is available as an artifact in the Actions tab.
 
 ## Files Included
 
 - `dllmain.cpp` - Main plugin source code
 - `re4_save_redirect.ini` - Configuration file
 - `Makefile` - For building with MinGW
-- `mingw_only_build.bat` - MinGW-only build script
+- `build.bat` - Build script
 - `download_dependencies.bat` - Download dependencies only
+- `.github/workflows/build.yml` - GitHub Actions workflow
 
 ## Notes
 

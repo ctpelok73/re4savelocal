@@ -1,12 +1,18 @@
+#ifdef _WIN32
 #include <windows.h>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <cctype>
 #include <shlobj.h>
-#include <detours.h>
 
+#ifndef _USE_DETOURS_STUB
+#include <detours.h>
 #pragma comment(lib, "detours.lib")
+#else
+// Include stub definitions when building in CI/CD without real Detours
+#include "detours_stub.h"
+#endif
 
 // Original function pointers
 typedef HANDLE (WINAPI *CreateFileAPtr)(
@@ -91,7 +97,7 @@ bool IsRe4SaveFile(const std::string& fileName) {
     }
     
     // Additional checks for specific RE4 file extensions
-    if (lowerFileName.find(".dat") != std::string::npos || 
+    if (lowerFileName.find(".dat") != std::string::npos ||
         lowerFileName.find(".bin") != std::string::npos ||
         lowerFileName.find(".sav") != std::string::npos) {
         return true;
@@ -110,7 +116,7 @@ std::string RedirectFilePath(const std::string& originalPath) {
     
     // Extract just the filename
     size_t lastSlash = originalPath.find_last_of("\\/");
-    std::string fileName = (lastSlash != std::string::npos) ? 
+    std::string fileName = (lastSlash != std::string::npos) ?
                           originalPath.substr(lastSlash + 1) : originalPath;
     
     // Check if this is a RE4 save file
@@ -134,11 +140,11 @@ HANDLE WINAPI HookedCreateFileA(
     if (lpFileName) {
         std::string redirectedPath = RedirectFilePath(std::string(lpFileName));
         return TrueCreateFileA(redirectedPath.c_str(), dwDesiredAccess, dwShareMode,
-                              lpSecurityAttributes, dwCreationDisposition, 
+                              lpSecurityAttributes, dwCreationDisposition,
                               dwFlagsAndAttributes, hTemplateFile);
     }
     return TrueCreateFileA(lpFileName, dwDesiredAccess, dwShareMode,
-                          lpSecurityAttributes, dwCreationDisposition, 
+                          lpSecurityAttributes, dwCreationDisposition,
                           dwFlagsAndAttributes, hTemplateFile);
 }
 
@@ -156,11 +162,11 @@ HANDLE WINAPI HookedCreateFileW(
         std::string originalPath(lpFileName);
         std::string redirectedPath = RedirectFilePath(originalPath);
         return TrueCreateFileW(redirectedPath.c_str(), dwDesiredAccess, dwShareMode,
-                              lpSecurityAttributes, dwCreationDisposition, 
+                              lpSecurityAttributes, dwCreationDisposition,
                               dwFlagsAndAttributes, hTemplateFile);
     }
     return TrueCreateFileW(lpFileName, dwDesiredAccess, dwShareMode,
-                          lpSecurityAttributes, dwCreationDisposition, 
+                          lpSecurityAttributes, dwCreationDisposition,
                           dwFlagsAndAttributes, hTemplateFile);
 }
 
@@ -171,6 +177,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         // Disable DLL_THREAD_ATTACH and DLL_THREAD_DETACH notifications for performance
         DisableThreadLibraryCalls(hModule);
         
+#ifdef _USE_DETOURS_STUB
+        // In CI/CD environment, don't actually hook functions
+        break;
+#else
         // Initialize detours
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
@@ -181,8 +191,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         
         DetourTransactionCommit();
         break;
+#endif
         
     case DLL_PROCESS_DETACH:
+#ifndef _USE_DETOURS_STUB
         // Remove hooks
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
@@ -191,6 +203,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
         DetourDetach(&(PVOID&)TrueCreateFileW, HookedCreateFileW);
         
         DetourTransactionCommit();
+#endif
         break;
     }
     

@@ -4,6 +4,7 @@
 # For Windows with MinGW-w64
 CC = g++
 CFLAGS = -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501
+CFLAGS_WITH_STUB = -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501 -D_USE_DETOURS_STUB
 LIBS = -ldetours -static -lshlwapi
 TARGET = RE4SaveRedirect.dll
 SOURCES = dllmain.cpp
@@ -11,9 +12,13 @@ SOURCES = dllmain.cpp
 # Default target
 all: $(TARGET)
 
-# Build the DLL
+# Build the DLL with real Detours library
 $(TARGET): $(SOURCES)
 	$(CC) $(CFLAGS) -o $(TARGET) $(SOURCES) $(LIBS)
+
+# Build the DLL with stubs (for CI/CD environments)
+stub: $(SOURCES)
+	$(CC) $(CFLAGS_WITH_STUB) -o $(TARGET) $(SOURCES) -lshlwapi
 
 # Clean build artifacts
 clean:
@@ -25,4 +30,4 @@ install-deps:
 	@echo "For Detours: Download from https://github.com/microsoft/Detours and install"
 	@echo "Make sure detours.lib is in your library path"
 
-.PHONY: all clean install-deps
+.PHONY: all clean install-deps stub
