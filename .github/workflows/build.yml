@@ -15,11 +15,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup MSVC
-      uses: microsoft/setup-msvc@v1
+    - name: Setup MSVC Environment
+      uses: ilammy/msvc-dev-cmd@v1
       with:
-        windows-sdk-version: '10.0.19041.0'
-        msvc-version: '2019'
+        arch: x86
 
     - name: Setup Detours
       run: |
