@@ -1,0 +1,42 @@
+# Build artifacts
+*.dll
+*.exe
+*.obj
+*.o
+*.lib
+*.a
+
+# Dependencies
+deps/
+detours/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*~
+*.bak
+
+# Logs
+*.log
+
+# User-specific files
+.vscode/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Output directories
+Debug/
+Release/
+x64/
+Win32/
+build/
