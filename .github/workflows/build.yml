@@ -51,18 +51,12 @@ jobs:
           Copy-Item "detours\lib.X86\detours.lib" .
           Copy-Item "detours\include\detours.h" .
         } else {
-          # Create a stub header for compilation
-          echo '#pragma once' > detours.h
-          echo 'typedef void* PVOID;' >> detours.h
-          echo 'typedef PVOID* PPVOID;' >> detours.h
-          echo 'void DetourTransactionBegin();' >> detours.h
-          echo 'void DetourTransactionCommit();' >> detours.h
-          echo 'void DetourUpdateThread(void* hThread);' >> detours.h
-          echo 'void DetourAttach(PPVOID ppPointer, PVOID pDetour);' >> detours.h
-          echo 'void DetourDetach(PPVOID ppPointer, PVOID pDetour);' >> detours.h
+          # Copy our stub header for compilation
+          Copy-Item "detours_stub.h" "detours.h"
           
           # Create a simple implementation for compilation
-          echo 'void DetourTransactionBegin() {}' > detours_impl.cpp
+          echo '#include "detours.h"' > detours_impl.cpp
+          echo 'void DetourTransactionBegin() {}' >> detours_impl.cpp
           echo 'void DetourTransactionCommit() {}' >> detours_impl.cpp
           echo 'void DetourUpdateThread(void* hThread) {}' >> detours_impl.cpp
           echo 'void DetourAttach(PPVOID ppPointer, PVOID pDetour) {}' >> detours_impl.cpp
