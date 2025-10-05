@@ -22,9 +22,17 @@ jobs:
 
     - name: Setup Detours
       run: |
-        # Download pre-built Detours library using PowerShell
-        Invoke-WebRequest -Uri "https://github.com/microsoft/detours/releases/download/v4.0.1/detours-4.0.1-x86.zip" -OutFile detours.zip
-        7z x detours.zip -odetours
+        # Download Detours source
+        git clone https://github.com/microsoft/detours.git
+        cd detours
+        # Checkout a stable version
+        git checkout v4.0.1
+        
+        # Build Detours using available tools
+        cd src
+        nmake
+        cd ..
+
         # Copy required files
         Copy-Item "detours\lib.X86\detours.lib" .
         Copy-Item "detours\include\detours.h" .
