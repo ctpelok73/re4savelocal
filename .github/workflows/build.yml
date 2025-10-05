@@ -15,11 +15,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install MinGW-w64
-      run: |
-        choco install mingw -y
-        echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
-      shell: powershell
+    - name: Setup MSVC
+      uses: microsoft/setup-msvc@v1
+      with:
+        windows-sdk-version: '10.0.19041.0'
+        msvc-version: '2019'
 
     - name: Setup Detours
       run: |
@@ -30,12 +30,13 @@ jobs:
         Copy-Item "detours\lib.X86\detours.lib" .
         Copy-Item "detours\include\detours.h" .
         Copy-Item "detours\include\detver.h" .
-
-    - name: Build with MinGW
-      run: |
-        # Build the DLL with dependencies
-        g++ -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501 dllmain.cpp -o RE4SaveRedirect.dll detours.lib -lshlwapi
       shell: powershell
+
+    - name: Build with MSVC
+      run: |
+        # Build the DLL with dependencies using Visual Studio compiler
+        cl /LD /Fe:RE4SaveRedirect.dll dllmain.cpp /link detours.lib shlwapi.lib
+      shell: cmd
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
