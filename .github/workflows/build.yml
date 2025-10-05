@@ -29,6 +29,14 @@ jobs:
         # Create a simple implementation for compilation using PowerShell to avoid encoding issues
         Set-Content -Path "detours_impl.cpp" -Value @'
         #include "detours.h"
+        
+        // Undefine macros to allow function definitions
+        #undef DetourTransactionBegin
+        #undef DetourTransactionCommit
+        #undef DetourUpdateThread
+        #undef DetourAttach
+        #undef DetourDetach
+        
         void DetourTransactionBegin() {}
         void DetourTransactionCommit() {}
         void DetourUpdateThread(void* hThread) {}
