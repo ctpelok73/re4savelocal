@@ -3,9 +3,9 @@ name: Build RE4 Save Redirect Plugin
 on:
   push:
     branches: [ main ]
- pull_request:
+pull_request:
     branches: [ main ]
-  release:
+release:
     types: [created]
 
 jobs:
