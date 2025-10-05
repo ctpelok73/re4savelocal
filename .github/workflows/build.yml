@@ -51,7 +51,7 @@ jobs:
     - name: Build with MinGW
       run: |
         # Build the DLL with dependencies
-        g++ -shared -O2 -Wall -Wextra -D_WIN32_WINNT=0x0501 -D_USE_DETOURS_STUB -DUNICODE -D_UNICODE dllmain.cpp detours_impl.o -o RE4SaveRedirect.dll -lshlwapi
+        g++ -shared -O2 -Wall -Wextra -DWIN32 -D_WIN32 -D_WIN32_WINNT=0x0501 -D_USE_DETOURS_STUB -DUNICODE -D_UNICODE -D_MBCS -fpermissive dllmain.cpp detours_impl.o -o RE4SaveRedirect.dll -lshlwapi
       shell: powershell
         
     - name: Upload build artifacts
