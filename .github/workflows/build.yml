@@ -20,27 +20,27 @@ jobs:
         choco install mingw -y
         echo "C:\ProgramData\chocolatey\bin" >> $env:GITHUB_PATH
       shell: powershell
-- name: Download and Build Detours
-  run: |
-    # Download Detours source
-    git clone https://github.com/microsoft/detours.git
-    cd detours
-    # Checkout a stable version
-    git checkout v4.0.1
-    
-    # Build Detours using available tools
-    cd src
-    # Use nmake if available, otherwise we'll provide stubs
-    if (Get-Command nmake -ErrorAction SilentlyContinue) {
-      # If Visual Studio is available, build Detours
-      nmake
-    } else {
-      # Create stub library for compilation
-      echo "// This is a stub library for compilation purposes" > detours.lib
-      echo "// Real Detours library is needed for actual functionality" >> detours.lib
-    }
-    cd ..
-    cd ..
+
+    - name: Download and Build Detours
+      run: |
+        # Download Detours source
+        git clone https://github.com/microsoft/detours.git
+        cd detours
+        # Checkout a stable version
+        git checkout v4.0.1
+        
+        # Build Detours using available tools
+        cd src
+        # Use nmake if available, otherwise we'll provide stubs
+        if (Get-Command nmake -ErrorAction SilentlyContinue) {
+          # If Visual Studio is available, build Detours
+          nmake
+        } else {
+          # Create stub library for compilation
+          echo "// This is a stub library for compilation purposes" > detours.lib
+          echo "// Real Detours library is needed for actual functionality" >> detours.lib
+        }
+        cd ..
 
         cd ..
 
